@@ -2,6 +2,7 @@
 import pickle
 import os
 import time
+import re
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import Select
@@ -15,6 +16,11 @@ password = input("Input password: ")
 
 driver = webdriver.Firefox()
 driver.get("https://www.ea.com/fifa/ultimate-team/web-app/")
+
+reg_match = re.search('(.*)\@', emayl)
+
+if reg_match:
+    filename = "{}{}".format(reg_match.group(1), ".pkl")
 
 def login(emayl,password):
     elm = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.XPATH, "/html/body/main/div/div/div/button[1]")))
@@ -30,10 +36,10 @@ def login(emayl,password):
         passw.send_keys(password)
 
         driver.find_element_by_xpath('//*[@id="btnLogin"]').click()
-
+        
         try:
             driver.find_element_by_xpath('//*[@id="btnSendCode"]').click()
-        
+
             verifycode = input("Input verification code here: ")
             loginverify = driver.find_element_by_id("oneTimeCode")
 
@@ -41,27 +47,40 @@ def login(emayl,password):
         
             time.sleep(10)
             driver.find_element_by_xpath('//*[@id="btnSubmit"]').click()
-        
-
-            #time.sleep(8)
-            #driver.get("https://www.ea.com/")
-
+            
             if "https://www.ea.com/" in driver.current_url:
-                pickle.dump(driver.get_cookies() , open("cookies.pkl","wb"))
+               pickle.dump(driver.get_cookies() , open(filename,"wb"))
         except:
             pass
         
 def cookieloader():
-    cookies = pickle.load(open("cookies.pkl", "rb"))
+    cookies = pickle.load(open(filename, "rb"))
     for cookie in cookies:
         driver.add_cookie(cookie)
     driver.refresh()
     time.sleep(5)
 
-if os.path.isfile("cookies.pkl"):
+
+# Clicking part
+def on_press(key):
+    try:
+        transferelm = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.XPATH, "/html/body/main/section/section/div[2]/div/div[2]/div/div[1]/div[2]")))    
+        if key.char == "b":
+            driver.find_element_by_xpath("/html/body/main/section/section/div[2]/div/div[2]/div/div[1]/div[2]/div[5]/div[2]/button[2]").click()
+        elif key.char == "v":
+            driver.find_element_by_xpath("/html/body/main/section/section/div[2]/div/div[2]/div/div[2]/button[2]").click()
+    except:
+        pass
+
+if os.path.isfile(filename):
     cookieloader()
-    time.sleep(5)
-    driver.get("https://www.ea.com/fifa/ultimate-team/web-app/")
     login(emayl,password)
+    driver.get("https://www.ea.com/fifa/ultimate-team/web-app/")
+    with Listener(on_press=on_press) as listener:
+        listener.join()
+    
 else:
     login(emayl,password)
+    driver.get("https://www.ea.com/fifa/ultimate-team/web-app/")
+    with Listener(on_press=on_press) as listener:
+        listener.join()
