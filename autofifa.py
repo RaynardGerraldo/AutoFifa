@@ -64,13 +64,19 @@ def cookieloader():
 # Clicking part
 def on_press(key):
     try:
-        transferelm = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.XPATH, "/html/body/main/section/section/div[2]/div/div[2]/div/div[1]/div[2]")))    
+        transferelm = driver.find_element_by_xpath("/html/body/main/section/section/div[2]/div/div[2]/div/div[1]/div[2]")    
         if key.char == "b":
             driver.find_element_by_xpath("/html/body/main/section/section/div[2]/div/div[2]/div/div[1]/div[2]/div[5]/div[2]/button[2]").click()
         elif key.char == "v":
             driver.find_element_by_xpath("/html/body/main/section/section/div[2]/div/div[2]/div/div[2]/button[2]").click()
     except:
-        pass
+         try:
+            searchresult = driver.find_element_by_xpath("/html/body/main/section/section/div[2]/div/div/section[2]/div/div/div[2]/div[1]/div/div[3]/button")
+            if key.char == "c":
+                driver.find_element_by_xpath("/html/body/main/section/section/div[2]/div/div/section[2]/div/div/div[2]/div[2]/button[2]").click()
+                driver.find_element_by_xpath("/html/body/div[4]/section/div/div/button[1]").click()
+         except:
+             pass
 
 if os.path.isfile(filename):
     cookieloader()
