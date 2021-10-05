@@ -22,6 +22,9 @@ if reg_match:
     filename = "{}{}".format(reg_match.group(1), ".pkl")
 
 temp = []
+choice = ""
+
+# Generate config file
 def conf():
     conf = configparser.ConfigParser()
     conf.read('shortcut.ini')
@@ -29,6 +32,7 @@ def conf():
         for j in conf[i]:
             temp.append(conf[i][j])
 
+# Login operation
 def login(eml,password):
     elm = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.XPATH, "/html/body/main/div/div/div/button[1]")))
 
@@ -59,7 +63,8 @@ def login(eml,password):
                pickle.dump(driver.get_cookies() , open(filename,"wb"))
         except:
             pass
-        
+
+# Loads cookie to browser to avoid security code prompt
 def cookieloader():
     cookies = pickle.load(open(filename, "rb"))
     for cookie in cookies:
@@ -85,21 +90,45 @@ def on_press(key):
          except:
              pass
 
+# Search and buy simultaneously
+def search_nbuy(key):
+    try:
+        transferelm = driver.find_element_by_xpath("/html/body/main/section/section/div[2]/div/div[2]/div/div[1]/div[2]")
+        if key.char == min_bin: 
+            driver.find_element_by_xpath("/html/body/main/section/section/div[2]/div/div[2]/div/div[1]/div[2]/div[5]/div[2]/button[2]").click()
+        elif key.char == search:
+            driver.find_element_by_xpath("/html/body/main/section/section/div[2]/div/div[2]/div/div[2]/button[2]").click()
+            try:
+               time.sleep(1)
+               searchresult = driver.find_element_by_xpath("/html/body/main/section/section/div[2]/div/div/section[2]/div/div/div[2]/div[1]/div/div[3]/button")
+               driver.find_element_by_xpath("/html/body/main/section/section/div[2]/div/div/section[2]/div/div/div[2]/div[2]/button[2]").click()
+               driver.find_element_by_xpath("/html/body/div[4]/section/div/div/button[1]").click()
+            except:
+                pass
+    except:
+        pass
+
 if os.path.isfile(filename):
     cookieloader()
     login(eml,password)
 
     if os.path.isfile('shortcut.ini'):
         conf()
-        min_bin,max_bin,min_bid,max_bid,search,buy_now = [i for i in temp]
+        min_bin,max_bin,min_bid,max_bid,search,buy_now = [i for i in temp if i != "Y" and i != "N"]
+        choice = [i for i in temp if i == "Y" or i == "N"]
     else:
         confset()
         conf()
         min_bin,max_bin,min_bid,max_bid,search,buy_now = [i for i in temp]
-
+        choice = [i for i in temp if i == "Y" or i == "N"]
     driver.get("https://www.ea.com/fifa/ultimate-team/web-app/")
-    with Listener(on_press=on_press) as listener:
-        listener.join()
+    
+    if choice[0] == "Y":
+        with Listener(on_press=search_nbuy) as listener:
+            listener.join()
+    else:
+        with Listener(on_press=on_press) as listener:
+            listener.join()
     
 else:
     if os.path.isfile('shortcut.ini'):
@@ -112,5 +141,10 @@ else:
 
     login(eml,password)
     driver.get("https://www.ea.com/fifa/ultimate-team/web-app/")
-    with Listener(on_press=on_press) as listener:
-        listener.join()
+    
+    if choice == "Y":
+        with Listener(on_press=search_nbuy) as listener:
+            listener.join()
+    else:
+        with Listener(on_press=on_press) as listener:
+            listener.join()
