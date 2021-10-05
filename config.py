@@ -14,5 +14,9 @@ def confset():
     config['SHRTCUT']['SEARCH'] = input("Search shortcut: ")
 
     config['SHRTCUT']['BUYNOW'] = input("Buy now shortcut: ")
+    config['SHRTCUT']['CHOICE'] = input("Would you like to use search + buy now simultaneously? Y or N: ")
+    
+    if config['SHRTCUT']['CHOICE'] == "":
+        config['SHRTCUT']['CHOICE'] = "N"
     with open('shortcut.ini', 'w') as f:
         config.write(f)
