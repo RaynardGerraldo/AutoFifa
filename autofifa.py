@@ -46,23 +46,23 @@ def login(eml,password):
         email.send_keys(eml)
         passw.send_keys(password)
 
-        driver.find_element_by_xpath('//*[@id="btnLogin"]').click()
+        driver.find_element_by_xpath('//*[@id="logInBtn"]').click()
+       
+        driver.find_element_by_xpath('//*[@id="btnSendCode"]').click()
         
-        try:
-            driver.find_element_by_xpath('//*[@id="btnSendCode"]').click()
+        time.sleep(4)
+        verifycode = input("Input verification code here: ")
+        loginverify = driver.find_element_by_xpath('//*[@id="twoFactorCode"]')
 
-            verifycode = input("Input verification code here: ")
-            loginverify = driver.find_element_by_id("oneTimeCode")
-
-            loginverify.send_keys(verifycode)
+        loginverify.send_keys(verifycode)
         
-            time.sleep(10)
-            driver.find_element_by_xpath('//*[@id="btnSubmit"]').click()
-            
-            if "https://www.ea.com/" in driver.current_url:
-               pickle.dump(driver.get_cookies() , open(filename,"wb"))
-        except:
-            pass
+        time.sleep(10)
+        driver.find_element_by_xpath('//*[@id="btnSubmit"]').click()
+        
+        time.sleep(6)
+        if "https://www.ea.com/" in driver.current_url:
+            print("work or no?")
+            pickle.dump(driver.get_cookies() , open(filename,"wb"))
 
 # Loads cookie to browser to avoid security code prompt
 def cookieloader():
@@ -93,18 +93,21 @@ def on_press(key):
 # Search and buy simultaneously
 def search_nbuy(key):
     try:
-        transferelm = driver.find_element_by_xpath("/html/body/main/section/section/div[2]/div/div[2]/div/div[1]/div[2]")
-        if key.char == min_bin: 
-            driver.find_element_by_xpath("/html/body/main/section/section/div[2]/div/div[2]/div/div[1]/div[2]/div[5]/div[2]/button[2]").click()
-        elif key.char == search:
-            driver.find_element_by_xpath("/html/body/main/section/section/div[2]/div/div[2]/div/div[2]/button[2]").click()
-            try:
-               time.sleep(1)
-               searchresult = driver.find_element_by_xpath("/html/body/main/section/section/div[2]/div/div/section[2]/div/div/div[2]/div[1]/div/div[3]/button")
-               driver.find_element_by_xpath("/html/body/main/section/section/div[2]/div/div/section[2]/div/div/div[2]/div[2]/button[2]").click()
-               driver.find_element_by_xpath("/html/body/div[4]/section/div/div/button[1]").click()
-            except:
-                pass
+        current = driver.switch_to.active_element
+        inputelement = driver.find_element_by_xpath('/html/body/main/section/section/div[2]/div/div[2]/div/div[1]/div[1]/div[1]/div/div[1]/input')
+        if current != inputelement:    
+            transferelm = driver.find_element_by_xpath("/html/body/main/section/section/div[2]/div/div[2]/div/div[1]/div[2]")
+            if key.char == min_bin: 
+                driver.find_element_by_xpath("/html/body/main/section/section/div[2]/div/div[2]/div/div[1]/div[2]/div[5]/div[2]/button[2]").click()
+            elif key.char == search:
+                driver.find_element_by_xpath("/html/body/main/section/section/div[2]/div/div[2]/div/div[2]/button[2]").click()
+                try:
+                    time.sleep(1)
+                    searchresult = driver.find_element_by_xpath("/html/body/main/section/section/div[2]/div/div/section[2]/div/div/div[2]/div[1]/div/div[3]/button")
+                    driver.find_element_by_xpath("/html/body/main/section/section/div[2]/div/div/section[2]/div/div/div[2]/div[2]/button[2]").click()
+                    driver.find_element_by_xpath("/html/body/div[4]/section/div/div/button[1]").click()
+                except:
+                    pass
     except:
         pass
 
@@ -133,16 +136,21 @@ if os.path.isfile(filename):
 else:
     if os.path.isfile('shortcut.ini'):
         conf()
-        min_bin,max_bin,min_bid,max_bid,search,buy_now = [i for i in temp]
+        min_bin,max_bin,min_bid,max_bid,search,buy_now = [i for i in temp if i != "Y" and i != "N"]
+        choice = [i for i in temp if i == "Y" or i == "N"]
     else:
         confset()
         conf()
-        min_bin,max_bin,min_bid,max_bid,search,buy_now = [i for i in temp]
+        min_bin,max_bin,min_bid,max_bid,search,buy_now = [i for i in temp if i != "Y" and i != "N"]
+        choice = [i for i in temp if i == "Y" or i == "N"]
 
     login(eml,password)
+
+    time.sleep(2)
+
     driver.get("https://www.ea.com/fifa/ultimate-team/web-app/")
     
-    if choice == "Y":
+    if choice[0] == "Y":
         with Listener(on_press=search_nbuy) as listener:
             listener.join()
     else:
