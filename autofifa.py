@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import pickle
 import os
 import time
@@ -61,7 +60,6 @@ def login(eml,password):
         
         time.sleep(6)
         if "https://www.ea.com/" in driver.current_url:
-            print("work or no?")
             pickle.dump(driver.get_cookies() , open(filename,"wb"))
 
 # Loads cookie to browser to avoid security code prompt
