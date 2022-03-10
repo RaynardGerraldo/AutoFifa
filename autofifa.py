@@ -30,10 +30,9 @@ def conf():
     for i in conf.sections():
         for j in conf[i]:
             temp.append(conf[i][j])
-
 # Login operation
 def login(eml,password):
-    elm = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.XPATH, "/html/body/main/div/div/div/button[1]")))
+    elm = WebDriverWait(driver,15).until(EC.presence_of_element_located((By.XPATH, "/html/body/main/div/div/div/button[1]")))
 
     time.sleep(10)
     driver.find_element_by_xpath("/html/body/main/div/div/div/button[1]").click()
@@ -46,19 +45,18 @@ def login(eml,password):
         passw.send_keys(password)
 
         driver.find_element_by_xpath('//*[@id="logInBtn"]').click()
-       
-        driver.find_element_by_xpath('//*[@id="btnSendCode"]').click()
         
-        time.sleep(4)
-        verifycode = input("Input verification code here: ")
-        loginverify = driver.find_element_by_xpath('//*[@id="twoFactorCode"]')
-
-        loginverify.send_keys(verifycode)
-        
-        time.sleep(10)
-        driver.find_element_by_xpath('//*[@id="btnSubmit"]').click()
-        
-        time.sleep(6)
+        try:
+            driver.find_element_by_xpath('//*[@id="btnSendCode"]').click()
+            verifycode = input("Input verification code here: ")
+            loginverify = driver.find_element_by_xpath('//*[@id="twoFactorCode"]')
+            loginverify.send_keys(verifycode)
+            time.sleep(5)
+            driver.find_element_by_xpath('//*[@id="btnSubmit"]').click()
+        except:
+            print("Cookie found!")
+            pass
+        time.sleep(5)
         if "https://www.ea.com/" in driver.current_url:
             pickle.dump(driver.get_cookies() , open(filename,"wb"))
 
@@ -68,7 +66,7 @@ def cookieloader():
     for cookie in cookies:
         driver.add_cookie(cookie)
     driver.refresh()
-    time.sleep(5)
+    time.sleep(3)
 
         
 # Clicking part
@@ -120,7 +118,7 @@ if os.path.isfile(filename):
     else:
         confset()
         conf()
-        min_bin,max_bin,min_bid,max_bid,search,buy_now = [i for i in temp]
+        min_bin,max_bin,min_bid,max_bid,search,buy_now = [i for i in temp if i != "Y" and i != "N"]
         choice = [i for i in temp if i == "Y" or i == "N"]
     driver.get("https://www.ea.com/fifa/ultimate-team/web-app/")
     
